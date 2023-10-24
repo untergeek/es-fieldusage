@@ -184,6 +184,6 @@ def get_args(params):
     configure_logging(params, config)
     client_args, other_args = get_arg_objects(config)
     override_client_args(params, client_args)
-    override_other_args(params, client_args)
+    override_other_args(params, other_args)
 
     return client_args, other_args
