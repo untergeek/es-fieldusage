@@ -152,11 +152,16 @@ def file(
     for idx in list(all_data.keys()):
         fname = f'{prefix}-{idx}.{suffix}'
         filename = os.path.join(filepath, fname)
+
+        # if the file already exists, remove it first so we don't append to old data below
+        if os.path.exists(filename):
+            os.remove(filename)
+
         files_written.append(fname)
         for key, boolval in {'accessed': show_accessed, 'unaccessed': show_unaccessed}.items():
             if boolval:
                 generator = output_generator(all_data[idx][key], show_counts, delimiter)
-                with open(filename, 'w', encoding='utf-8') as fdesc:
+                with open(filename, 'a', encoding='utf-8') as fdesc:
                     fdesc.writelines(generator)
     click.secho('Number of files written: ', nl=False)
     click.secho(len(files_written), bold=True)
