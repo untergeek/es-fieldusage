@@ -7,14 +7,17 @@
 
 **Table of Contents**
 
-- [Installation](#installation)
-- [Description](#description)
-  - [Options](#top-level-help-output)
-  - [Command: stdout](#command-stdout-help-output)
-  - [Command: file](#command-file-help-output)
-  - [Command: show-indices](#command-show-indices-help-output)
-- [Docker Usage](#docker-usage)
-- [License](#license)
+- [es-fieldusage](#es-fieldusage)
+  - [Installation](#installation)
+  - [Description](#description)
+    - [Top-level help output](#top-level-help-output)
+    - [Command: `stdout` help output](#command-stdout-help-output)
+    - [Command `file` help output](#command-file-help-output)
+    - [Command `show-indices` help output](#command-show-indices-help-output)
+  - [Docker usage](#docker-usage)
+    - [Docker build](#docker-build)
+    - [Docker run](#docker-run)
+  - [License](#license)
 
 ## Installation
 
@@ -55,7 +58,7 @@ Options:
   --password TEXT                 Elasticsearch password
   --request_timeout FLOAT         Request timeout in seconds
   --verify_certs / --no-verify_certs
-                                  Verify SSL/TLS certificate(s)  [default: verify_certs]
+                                  Verify SSL/TLS certificate(s)
   --ca_certs TEXT                 Path to CA certificate file or directory
   --client_cert TEXT              Path to client certificate file
   --client_key TEXT               Path to client key file
@@ -63,6 +66,7 @@ Options:
                                   Log level
   --logfile TEXT                  Log file
   --logformat [default|ecs]       Log output format
+  --blacklist TEXT                Named entities will not be logged
   -v, --version                   Show the version and exit.
   -h, --help                      Show this message and exit.
 
@@ -70,7 +74,7 @@ Commands:
   show-all-options  Show all configuration options
   stdout            Output field usage information to the console
 
-  Learn more at https://github.com/untergeek/elastic-grab-bag/es_fieldusage
+  Learn more at https://github.com/untergeek/es-fieldusage
 ```
 
 ### Command: `stdout` help output
@@ -92,10 +96,10 @@ Options:
   --show-unaccessed / --hide-unaccessed
                                   Show unaccessed fields  [default: hide-unaccessed]
   --show-counts / --hide-counts   Show field access counts  [default: hide-counts]
-  --delimiter TEXT                Value delimiter if access counts are shown  [default: :]
+  --delimiter TEXT                Value delimiter if access counts are shown  [default: ,]
   -h, --help                      Show this message and exit.
 
-  Learn more at https://github.com/untergeek/elastic-grab-bag/es_fieldusage
+  Learn more at https://github.com/untergeek/es-fieldusage
   ```
 
 ### Command `file` help output
@@ -121,7 +125,7 @@ Options:
   --delimiter TEXT                Value delimiter if access counts are shown  [default: ,]
   -h, --help                      Show this message and exit.
 
-  Learn more at https://github.com/untergeek/elastic-grab-bag/es_fieldusage
+  Learn more at https://github.com/untergeek/es-fieldusage
 ```
 
 ### Command `show-indices` help output
@@ -139,7 +143,7 @@ Usage: es-fieldusage show-indices SEARCH_PATTERN
 Options:
   -h, --help  Show this message and exit.
 
-  Learn more at https://github.com/untergeek/elastic-grab-bag/es-fieldusage
+  Learn more at https://github.com/untergeek/es-fieldusage
 ```
 
 ## Docker usage

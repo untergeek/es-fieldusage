@@ -1,3 +1,10 @@
+.vscode/
+.flake8
+mypy.ini
+pylintrc.toml
+pytest.ini
+src/testing
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
