@@ -159,13 +159,18 @@ $ ./docker build . -t reponame/es-fieldusage:x.y.z
 e.g.
 
 ```
-docker build . -t untergeek/es-fieldusage:1.0.0
+docker build . -t untergeek/es-fieldusage:1.2.0
 ```
 
 You can also build for x86_64 and arm64 if you have the appropriate buildx image setup:
 
 ```
-docker buildx build --platform linux/amd64,linux/arm64 -t untergeek/es-fieldusage:1.0.0 --push .
+docker \
+  buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -t untergeek/es-fieldusage:1.2.0 \
+  --load \
+  .
 ```
 
 ### Docker run
@@ -173,7 +178,14 @@ docker buildx build --platform linux/amd64,linux/arm64 -t untergeek/es-fieldusag
 **Example:**
 
 ```
-docker run -t --rm --name es-fieldusage -v /path/to/configfile/:/.esfieldusage -v $(pwd)/:/fileoutput untergeek/es-fieldusage:1.0.0 --config /.esfieldusage/config.yml show-indices 'index-*'
+docker run \
+  -t \
+  --rm \
+  --name es-fieldusage \
+  -v /path/to/configfile/:/.esfieldusage \
+  -v $(pwd)/:/fileoutput \
+  untergeek/es-fieldusage:1.2.0 \
+    --config /.esfieldusage/config.yml show-indices 'index-*'
 ```
 
 **Explanation:**
@@ -182,7 +194,7 @@ docker run -t --rm --name es-fieldusage -v /path/to/configfile/:/.esfieldusage -
   * `--rm` deletes the created Docker image after the run. Omitting this will result in a lot of created images that run once. Using `--name` will prevent this collision if `--rm` is omitted by reminding you that there is already an image with the same name.
   * `--name` is the name of the image to create. This is optional.
   * `-v` sets up volumes. `/path/to/configfile/` is the local file path to where you have a YAML configuration file, if you choose to use one. The `:/.esfieldusage` portion of the volume map is the directory where that configuration file is expected in the Docker image. The second volume mapping is `$(pwd):/fileoutput`. `/fileoutput` is the dedicated file path on the Docker image where output from the [file](#command-file-help-output) command will be written. By using `$(pwd)` it will map your present working directory so the files will appear there. Otherwise you can map another path here.
-  * `untergeek/es-fieldusage:1.0.0` is the `repository/image:version` to run.
+  * `untergeek/es-fieldusage:1.2.0` is the `repository/image:version` to run.
   * `--config /.esfieldusage/config.yml`, as stated previously, if you intend to use a YAML configuration file, the path needs to be mapped as a volume, and then accessed this way. The filename should match whatever you actually have, and not necessarily `config.yml`
   * `show-indices 'index-*'` Everything after here is available as regular options and commands for es-fieldusage.
 
