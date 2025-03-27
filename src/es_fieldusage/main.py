@@ -1,17 +1,17 @@
 """Main app definition"""
 
+# pylint: disable=R0902
+import typing as t
 import logging
 from es_client.helpers.config import get_client
 from es_fieldusage.helpers import utils as u
 from es_fieldusage.exceptions import ResultNotExpected, ValueMismatch
 
-# pylint: disable=R0902
-
 
 class FieldUsage:
     """Main Class"""
 
-    def __init__(self, configdict, search_pattern):
+    def __init__(self, configdict: t.Dict[str, t.Any], search_pattern: str) -> None:
         self.logger = logging.getLogger(__name__)
         self.client = get_client(configdict=configdict)
         self.usage_stats = {}
@@ -20,9 +20,12 @@ class FieldUsage:
         self.results_data = {}
         self.report_data = {}
         self.per_index_report_data = {}
+        self.logger.info(
+            f"Initializing FieldUsage with search pattern: {search_pattern}"
+        )
         self.get(search_pattern)
 
-    def get(self, search_pattern):
+    def get(self, search_pattern: str) -> None:
         """
         Get ``raw_data`` from the field_usage_stats API for all indices in
         ``search_pattern`` Iterate over ``raw_data`` to build ``self.usage_stats``
@@ -30,6 +33,7 @@ class FieldUsage:
         try:
             field_usage = self.client.indices.field_usage_stats(index=search_pattern)
         except Exception as exc:
+            self.logger.error(f"Unable to get field usage: {exc}")
             raise ResultNotExpected(f'Unable to get field usage: {exc}') from exc
         for index in list(field_usage.keys()):
             if index == '_shards':
@@ -37,14 +41,18 @@ class FieldUsage:
                 continue
             self.usage_stats[index] = self.sum_index_stats(field_usage, index)
 
-    def get_field_mappings(self, idx):
+    def get_field_mappings(self, idx: str) -> t.Dict[str, t.Any]:
         """
         Return only the field mappings for index ``idx`` (not the entire index
         mapping)
         """
-        return self.client.indices.get_mapping(index=idx)[idx]['mappings']['properties']
+        return dict(
+            self.client.indices.get_mapping(index=idx)[idx]['mappings']['properties']
+        )
 
-    def populate_values(self, idx, data):
+    def populate_values(
+        self, idx: str, data: t.Dict[t.Any, t.Any]
+    ) -> t.Dict[t.Any, t.Any]:
         """Now add the field usage values for idx to data and return the result"""
         for field in list(self.usage_stats[idx].keys()):
             if '.' in field:
@@ -54,7 +62,7 @@ class FieldUsage:
             data[path] = self.usage_stats[idx][field]
         return data
 
-    def get_resultset(self, idx):
+    def get_resultset(self, idx: str) -> t.Dict[t.Any, t.Any]:
         """Populate a result set with the fields in the index mapping"""
         result = {}
         if idx in self.usage_stats:
@@ -62,7 +70,7 @@ class FieldUsage:
             result = self.populate_values(idx, allfields)
         return result
 
-    def merge_results(self, idx):
+    def merge_results(self, idx: str) -> t.Dict[str, t.Any]:
         """Merge field usage data with index mapping"""
         retval = {}
         data = self.get_resultset(idx)
@@ -72,7 +80,7 @@ class FieldUsage:
             retval[key] = value
         return retval
 
-    def verify_single_index(self, index=None):
+    def verify_single_index(self, index: t.Optional[str] = None) -> str:
         """
         Ensure the index count is 1 for certain methods
         If no index provided, and only one is in self.indices, use that one
@@ -80,6 +88,7 @@ class FieldUsage:
         if index is None:
             if isinstance(self.indices, list):
                 if len(self.indices) > 1:
+                    self.logger.warning(f"Too many indices found: {self.indices}")
                     msg = (
                         f'Too many indices found. Indicate single index for result, '
                         f'or use results for all indices. Found: {self.indices}'
@@ -92,7 +101,7 @@ class FieldUsage:
         return index
 
     @property
-    def per_index_report(self):
+    def per_index_report(self) -> t.Dict[str, t.Any]:
         """Generate summary report data"""
         if not self.per_index_report_data:
             self.report_data['indices'] = self.indices
@@ -109,7 +118,7 @@ class FieldUsage:
         return self.per_index_report_data
 
     @property
-    def report(self):
+    def report(self) -> t.Dict[str, t.Any]:
         """Generate summary report data"""
         if not self.report_data:
             self.report_data['indices'] = self.indices
@@ -123,13 +132,13 @@ class FieldUsage:
                     self.report_data['accessed'][key] = value
         return self.report_data
 
-    def result(self, idx=None):
+    def result(self, idx: t.Optional[str] = None) -> t.Dict[str, t.Any]:
         """Return a single index result as a dictionary"""
         idx = self.verify_single_index(index=idx)
         return u.sort_by_value(self.merge_results(idx))
 
     @property
-    def results_by_index(self):
+    def results_by_index(self) -> t.Dict[str, t.Dict[str, t.Any]]:
         """
         Return all results as a dictionary, with the index name as the root key,
         and all stats for that index as the value, which is a dictionary generated
@@ -145,7 +154,7 @@ class FieldUsage:
         return self.per_index_data
 
     @property
-    def results(self):
+    def results(self) -> t.Dict[str, t.Any]:
         """Return results for all indices found with values summed per mapping leaf"""
         # The summing re-orders things so it needs to be re-sorted
         if not self.results_data:
@@ -154,7 +163,7 @@ class FieldUsage:
         return self.results_data
 
     @property
-    def indices(self):
+    def indices(self) -> t.Union[str, t.List[str]]:
         """Return all indices found"""
         if not self.indices_data:
             self.indices_data = list(self.usage_stats.keys())
@@ -162,7 +171,9 @@ class FieldUsage:
             return self.indices_data[0]
         return self.indices_data
 
-    def sum_index_stats(self, field_usage, idx):
+    def sum_index_stats(
+        self, field_usage: t.Dict[str, t.Any], idx: str
+    ) -> t.Dict[str, int]:
         """Per field, sum all of the usage stats for all shards in ``idx``"""
 
         def appender(result, field, value):

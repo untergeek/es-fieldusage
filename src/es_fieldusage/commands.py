@@ -1,12 +1,14 @@
 """Sub-commands for Click CLI"""
 
+# pylint: disable=R0913,R0914,R0917
+import typing as t
 import os
 from datetime import datetime, timezone
 import json
 import logging
+from pathlib import Path
 import click
 from es_client.helpers import config as escl
-from es_client.helpers.logging import is_docker
 from es_client.helpers.utils import option_wrapper
 from es_fieldusage.defaults import OPTS, FILEPATH_OVERRIDE, EPILOG
 from es_fieldusage.exceptions import FatalException
@@ -17,17 +19,15 @@ SHW = {'on': 'show-', 'off': 'hide-'}
 TRU = {'default': True}
 WRP = option_wrapper()
 
-# pylint: disable=R0913,R0914
 
-
-def get_per_index(field_usage, per_index):
+def get_per_index(field_usage: FieldUsage, per_index: bool) -> t.Dict[str, t.Any]:
     """Return the per_index data set for reporting"""
     logger = logging.getLogger(__name__)
     if per_index:
         try:
             all_data = field_usage.per_index_report
         except Exception as exc:
-            logger.critical('Unable to get per_index_report data: %s', exc)
+            logger.critical(f'Unable to get per_index_report data: {exc}')
             raise FatalException from exc
     else:
         all_data = {
@@ -39,7 +39,7 @@ def get_per_index(field_usage, per_index):
     return all_data
 
 
-def format_delimiter(value):
+def format_delimiter(value: str) -> str:
     """Return a formatted delimiter"""
     delimiter = ''
     if value == ':':
@@ -51,21 +51,36 @@ def format_delimiter(value):
     return delimiter
 
 
-def header_msg(msg, show):
+def header_msg(msg: str, show: bool) -> str:
     """Return the message to show if show is True"""
     if not show:
         msg = ''
     return msg
 
 
-def printout(data, show_counts, raw_delimiter):
+def is_docker() -> bool:
+    """
+    :rtype: bool
+    :returns: Boolean result of whether we are runinng in a Docker container or not
+    """
+    cgroup = Path("/proc/self/cgroup")
+    return (
+        Path("/.dockerenv").is_file()
+        or cgroup.is_file()
+        and "docker" in cgroup.read_text(encoding="utf8")
+    )
+
+
+def printout(data: t.Dict[str, t.Any], show_counts: bool, raw_delimiter: str) -> None:
     """Print output to stdout based on the provided values"""
     for line in output_generator(data, show_counts, raw_delimiter):
         # Since the generator is adding newlines, we set nl=False here
         click.secho(line, nl=False)
 
 
-def output_generator(data, show_counts, raw_delimiter):
+def output_generator(
+    data: t.Dict[str, t.Any], show_counts: bool, raw_delimiter: str
+) -> t.Generator[str, None, None]:
     """Generate output iterator based on the provided values"""
     delimiter = format_delimiter(raw_delimiter)
     for key, value in data.items():
@@ -79,7 +94,7 @@ def output_generator(data, show_counts, raw_delimiter):
         yield f'{line}\n'
 
 
-def override_filepath():
+def override_filepath() -> t.Dict[str, str]:
     """Override the default filepath if we're running Docker"""
     if is_docker():
         return {'default': FILEPATH_OVERRIDE}
@@ -96,15 +111,15 @@ def override_filepath():
 @click.argument('search_pattern', type=str, nargs=1)
 @click.pass_context
 def stdout(
-    ctx,
-    show_report,
-    show_headers,
-    show_accessed,
-    show_unaccessed,
-    show_counts,
-    delimiter,
-    search_pattern,
-):
+    ctx: click.Context,
+    show_report: bool,
+    show_headers: bool,
+    show_accessed: bool,
+    show_unaccessed: bool,
+    show_counts: bool,
+    delimiter: str,
+    search_pattern: str,
+) -> None:
     """
     Display field usage information on the console for SEARCH_PATTERN
 
@@ -120,7 +135,7 @@ def stdout(
     try:
         field_usage = FieldUsage(ctx.obj['configdict'], search_pattern)
     except Exception as exc:
-        logger.critical('Exception encountered: %s', exc)
+        logger.critical(f'Exception encountered: {exc}')
         raise FatalException from exc
     if show_report:
         output_report(search_pattern, field_usage.report)
@@ -147,18 +162,18 @@ def stdout(
 @click.argument('search_pattern', type=str, nargs=1)
 @click.pass_context
 def file(
-    ctx,
-    show_report,
-    show_accessed,
-    show_unaccessed,
-    show_counts,
-    per_index,
-    filepath,
-    prefix,
-    suffix,
-    delimiter,
-    search_pattern,
-):
+    ctx: click.Context,
+    show_report: bool,
+    show_accessed: bool,
+    show_unaccessed: bool,
+    show_counts: bool,
+    per_index: bool,
+    filepath: str,
+    prefix: str,
+    suffix: str,
+    delimiter: str,
+    search_pattern: str,
+) -> None:
     """
     Write field usage information to file for SEARCH_PATTERN
 
@@ -175,7 +190,7 @@ def file(
     try:
         field_usage = FieldUsage(ctx.obj['configdict'], search_pattern)
     except Exception as exc:
-        logger.critical('Exception encountered: %s', exc)
+        logger.critical(f'Exception encountered: {exc}')
         raise FatalException from exc
     if show_report:
         output_report(search_pattern, field_usage.report)
@@ -233,14 +248,14 @@ def file(
 @click.argument('search_pattern', type=str, nargs=1)
 @click.pass_context
 def index(
-    ctx,
-    show_report,
-    show_accessed,
-    show_unaccessed,
-    per_index,
-    indexname,
-    search_pattern,
-):
+    ctx: click.Context,
+    show_report: bool,
+    show_accessed: bool,
+    show_unaccessed: bool,
+    per_index: bool,
+    indexname: str,
+    search_pattern: str,
+) -> None:
     """
     Write field usage information to file for SEARCH_PATTERN
 
@@ -258,12 +273,12 @@ def index(
     }
     """
     logger = logging.getLogger(__name__)
-    logger.debug('indexname = %s', indexname)
+    logger.debug(f'indexname = {indexname}')
     timestamp = f"{datetime.now(timezone.utc).isoformat().split('.')[0]}.000Z"
     try:
         field_usage = FieldUsage(ctx.obj['configdict'], search_pattern)
     except Exception as exc:
-        logger.critical('Exception encountered: %s', exc)
+        logger.critical(f'Exception encountered: {exc}')
         raise FatalException from exc
     # client = field_usage.client
     if show_report:
@@ -307,7 +322,7 @@ def index(
 @click.command(epilog=EPILOG)
 @click.argument('search_pattern', type=str, nargs=1)
 @click.pass_context
-def show_indices(ctx, search_pattern):
+def show_indices(ctx: click.Context, search_pattern: str) -> None:
     """
     Show indices on the console matching SEARCH_PATTERN
 
@@ -320,7 +335,7 @@ def show_indices(ctx, search_pattern):
     try:
         client = escl.get_client(configdict=ctx.obj['configdict'])
     except Exception as exc:
-        logger.critical('Exception encountered: %s', exc)
+        logger.critical(f'Exception encountered: {exc}')
         raise FatalException from exc
     cat = client.cat.indices(index=search_pattern, h='index', format='json')
     indices = []

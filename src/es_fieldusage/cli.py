@@ -1,5 +1,7 @@
 """Command-line interface"""
 
+# pylint: disable=R0913,R0914,R0917,W0613,W0622
+import typing as t
 import click
 from es_client.commands import show_all_options
 from es_client.defaults import OPTION_DEFAULTS
@@ -10,41 +12,38 @@ from es_fieldusage.commands import file, show_indices, stdout
 from es_fieldusage.version import __version__
 
 
-# pylint: disable=R0913,R0914,W0613,W0622
-
-
 @click.group(context_settings=escl.context_settings(), epilog=EPILOG)
 @escl.options_from_dict(OPTION_DEFAULTS)
 @click.version_option(__version__, '-v', '--version', prog_name="es-fieldusage")
 @click.pass_context
 def run(
-    ctx,
-    config,
-    hosts,
-    cloud_id,
-    api_token,
-    id,
-    api_key,
-    username,
-    password,
-    bearer_auth,
-    opaque_id,
-    request_timeout,
-    http_compress,
-    verify_certs,
-    ca_certs,
-    client_cert,
-    client_key,
-    ssl_assert_hostname,
-    ssl_assert_fingerprint,
-    ssl_version,
-    master_only,
-    skip_version_test,
-    loglevel,
-    logfile,
-    logformat,
-    blacklist,
-):
+    ctx: click.Context,
+    config: t.Optional[str],
+    hosts: t.Optional[str],
+    cloud_id: t.Optional[str],
+    api_token: t.Optional[str],
+    id: t.Optional[str],
+    api_key: t.Optional[str],
+    username: t.Optional[str],
+    password: t.Optional[str],
+    bearer_auth: t.Optional[str],
+    opaque_id: t.Optional[str],
+    request_timeout: t.Optional[float],
+    http_compress: t.Optional[bool],
+    verify_certs: t.Optional[bool],
+    ca_certs: t.Optional[str],
+    client_cert: t.Optional[str],
+    client_key: t.Optional[str],
+    ssl_assert_hostname: t.Optional[bool],
+    ssl_assert_fingerprint: t.Optional[str],
+    ssl_version: t.Optional[str],
+    master_only: t.Optional[bool],
+    skip_version_test: t.Optional[bool],
+    loglevel: t.Optional[str],
+    logfile: t.Optional[str],
+    logformat: t.Optional[str],
+    blacklist: t.Optional[t.List[str]],
+) -> None:
     """Elasticsearch Index Field Usage Reporting Tool
 
     Sum all field query/request access for one or more indices using the Elastic

@@ -30,7 +30,7 @@ keywords = [
     'usage',
 ]
 dependencies = [
-    "es_client==8.15.1"
+    "es_client==8.17.4"
 ]
 
 [project.optional-dependencies]

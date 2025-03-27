@@ -1,19 +1,20 @@
 """Default values and constants"""
 
+# pylint: disable=E1120
+import typing as t
 import os
 
-# pylint: disable=E1120
 
 # This value is hard-coded in the Dockerfile, so don't change it
-FILEPATH_OVERRIDE = '/fileoutput'
+FILEPATH_OVERRIDE: str = '/fileoutput'
 
-INDEXNAME = 'es-fieldusage'
+INDEXNAME: str = 'es-fieldusage'
 
-EPILOG = 'Learn more at https://github.com/untergeek/es-fieldusage'
+EPILOG: str = 'Learn more at https://github.com/untergeek/es-fieldusage'
 
-HELP_OPTIONS = {'help_option_names': ['-h', '--help']}
+HELP_OPTIONS: t.Dict[str, t.List[str]] = {'help_option_names': ['-h', '--help']}
 
-OPTS = {
+OPTS: t.Dict[str, t.Dict[str, t.Any]] = {
     'report': {
         'help': 'Show a summary report',
         'default': True,
